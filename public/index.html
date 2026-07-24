@@ -363,6 +363,55 @@
             color: #fff;
         }
 
+        /* API Key Generator */
+        .key-generator {
+            margin-top: 30px;
+            padding: 30px;
+            background: rgba(0, 255, 0, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(0, 255, 0, 0.2);
+        }
+
+        .key-generator input {
+            padding: 10px 15px;
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 8px;
+            background: #0a0a0a;
+            color: #00ff00;
+            font-family: monospace;
+            width: 100%;
+            max-width: 400px;
+            margin: 10px 0;
+        }
+
+        .key-generator button {
+            padding: 10px 30px;
+            background: #00ff00;
+            color: #0a0a0a;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .key-generator button:hover {
+            background: transparent;
+            color: #00ff00;
+            border: 2px solid #00ff00;
+        }
+
+        .key-display {
+            margin-top: 15px;
+            padding: 15px;
+            background: #0a0a0a;
+            border: 1px solid #00ff00;
+            border-radius: 8px;
+            color: #00ff00;
+            font-family: monospace;
+            word-break: break-all;
+        }
+
         /* Footer */
         .footer {
             background: rgba(0, 0, 0, 0.9);
@@ -481,6 +530,36 @@
 
         ::-webkit-scrollbar-thumb:hover {
             background: #00cc00;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: #fff;
+            z-index: 9999;
+            animation: slideIn 0.5s ease;
+        }
+
+        .toast-success {
+            background: rgba(0, 255, 0, 0.9);
+        }
+
+        .toast-error {
+            background: rgba(255, 0, 0, 0.9);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
     </style>
 </head>
@@ -618,7 +697,7 @@
             
             <div class="api-endpoint">
                 <span class="method">GET</span> 
-                <span class="url">/api/adminkey=TNEH3&createkey</span>
+                <span class="url">/api/createkey?adminkey=TNEH3</span>
                 <span style="color: #888; margin-left: 10px;">- Create API Key</span>
             </div>
             <div class="api-endpoint">
@@ -628,7 +707,7 @@
             </div>
             <div class="api-endpoint">
                 <span class="method">GET</span> 
-                <span class="url">/api/info?key=API_KEY&dob=DD-MM-YYYY&nid=NID</span>
+                <span class="url">/api/info?key=API_KEY&dob=YYYY-MM-DD&nid=NID</span>
                 <span style="color: #888; margin-left: 10px;">- Get Info by DOB & NID</span>
             </div>
             <div class="api-endpoint">
@@ -640,6 +719,28 @@
                 <span class="method">DELETE</span> 
                 <span class="url">/api/delete?key=API_KEY</span>
                 <span style="color: #888; margin-left: 10px;">- Delete API Key</span>
+            </div>
+            <div class="api-endpoint">
+                <span class="method">GET</span> 
+                <span class="url">/api/allkey?adminkey=TNEH3</span>
+                <span style="color: #888; margin-left: 10px;">- Get All Keys (Admin)</span>
+            </div>
+
+            <!-- Key Generator -->
+            <div class="key-generator">
+                <h3 style="color: #00ff00;">🔑 Generate API Key</h3>
+                <p style="color: #aaa; margin: 10px 0;">Click the button below to generate a new API key instantly</p>
+                <button onclick="generateKey()">Generate New Key</button>
+                <div id="keyDisplay" class="key-display" style="display: none;"></div>
+            </div>
+
+            <!-- Test API Key -->
+            <div class="key-generator" style="margin-top: 20px;">
+                <h3 style="color: #00ff00;">🔍 Test Your API Key</h3>
+                <p style="color: #aaa; margin: 10px 0;">Enter your API key to test if it's working</p>
+                <input type="text" id="testKeyInput" placeholder="Enter your API key here" style="width: 100%; max-width: 400px;">
+                <button onclick="testKey()" style="margin-top: 10px;">Test Key</button>
+                <div id="testResult" class="key-display" style="display: none;"></div>
             </div>
             
             <div style="margin-top: 20px; text-align: center;">
@@ -670,7 +771,6 @@
         </p>
     </footer>
 
-    <!-- Matrix Background Script -->
     <script>
         // Matrix Rain Effect
         const canvas = document.getElementById('matrix-bg');
@@ -713,6 +813,96 @@
         }
 
         setInterval(drawMatrix, 50);
+
+        // Toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.5s';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
+        // Generate Key Function
+        async function generateKey() {
+            const button = event.target;
+            button.textContent = 'Generating...';
+            button.disabled = true;
+            
+            try {
+                const response = await fetch('/api/createkey?adminkey=TNEH3');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const keyDisplay = document.getElementById('keyDisplay');
+                    keyDisplay.style.display = 'block';
+                    keyDisplay.innerHTML = `✅ API Key Generated Successfully!<br><br><strong>${data.key}</strong><br><br><span style="font-size: 12px; color: #888;">Copy this key and save it securely. You won't be able to see it again.</span>`;
+                    showToast('✅ API Key generated successfully!', 'success');
+                    
+                    // Copy to clipboard button
+                    const copyBtn = document.createElement('button');
+                    copyBtn.textContent = '📋 Copy to Clipboard';
+                    copyBtn.style.cssText = `
+                        margin-top: 10px;
+                        padding: 8px 20px;
+                        background: #00ff00;
+                        color: #0a0a0a;
+                        border: none;
+                        border-radius: 5px;
+                        cursor: pointer;
+                        font-weight: bold;
+                    `;
+                    copyBtn.onclick = () => {
+                        navigator.clipboard.writeText(data.key);
+                        showToast('📋 Key copied to clipboard!', 'success');
+                    };
+                    keyDisplay.appendChild(copyBtn);
+                } else {
+                    showToast('❌ Error generating key: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showToast('❌ Error: ' + error.message, 'error');
+            } finally {
+                button.textContent = 'Generate New Key';
+                button.disabled = false;
+            }
+        }
+
+        // Test Key Function
+        async function testKey() {
+            const keyInput = document.getElementById('testKeyInput');
+            const key = keyInput.value.trim();
+            
+            if (!key) {
+                showToast('❌ Please enter an API key', 'error');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('testResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '⏳ Testing key...';
+            
+            try {
+                const response = await fetch(`/api/chack?key=${key}`);
+                const data = await response.json();
+                
+                if (data.valid) {
+                    resultDiv.innerHTML = `✅ Key is VALID!<br><br>🔑 ${key}<br><br><span style="color: #00ff00;">Your API key is active and ready to use.</span>`;
+                    showToast('✅ Key is valid!', 'success');
+                } else {
+                    resultDiv.innerHTML = `❌ Key is INVALID<br><br>🔑 ${key}<br><br><span style="color: #ff4444;">The provided key is not recognized.</span>`;
+                    showToast('❌ Key is invalid', 'error');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `❌ Error testing key: ${error.message}`;
+                showToast('❌ Error: ' + error.message, 'error');
+            }
+        }
 
         // Animate stats counter
         function animateCounter(element, target, duration) {
