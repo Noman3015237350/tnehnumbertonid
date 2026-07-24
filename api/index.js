@@ -52,86 +52,8 @@ const ADMIN_KEY = 'TNEH3';
 // API ROUTES
 // =============================================
 
-/**
- * API Documentation Route
- * GET /api/docs
- */
-app.get('/api/docs', (req, res) => {
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
-    
-    res.json({
-        success: true,
-        message: 'TNEH Database API',
-        base_url: baseUrl,
-        version: '1.0.0',
-        endpoints: {
-            create_key: {
-                method: 'GET',
-                endpoint: '/api/adminkey=TNEH3&createkey',
-                description: 'Generate a new API key',
-                auth_required: true
-            },
-            get_info_by_number: {
-                method: 'GET',
-                endpoint: '/api/info?key=API_KEY&number=PHONE_NUMBER',
-                description: 'Get user info by phone number',
-                auth_required: true,
-                params: ['key', 'number']
-            },
-            get_info_by_dob_nid: {
-                method: 'GET',
-                endpoint: '/api/info?key=API_KEY&dob=DD-MM-YYYY&nid=NID_NUMBER',
-                description: 'Get user info by DOB and NID',
-                auth_required: true,
-                params: ['key', 'dob', 'nid']
-            },
-            check_key: {
-                method: 'GET',
-                endpoint: '/api/chack?key=API_KEY',
-                description: 'Check if API key is valid',
-                auth_required: true,
-                params: ['key']
-            },
-            delete_key: {
-                method: 'GET',
-                endpoint: '/api/delete?key=API_KEY',
-                description: 'Delete an API key',
-                auth_required: true,
-                params: ['key']
-            },
-            all_keys: {
-                method: 'GET',
-                endpoint: '/api/allkey',
-                description: 'Get all valid API keys',
-                auth_required: true
-            }
-        },
-        response_codes: {
-            '200': 'Success - Request processed successfully',
-            '400': 'Bad Request - Missing required parameters',
-            '401': 'Unauthorized - Invalid or missing API key',
-            '403': 'Forbidden - Admin access required',
-            '404': 'Not Found - Resource not found',
-            '409': 'Conflict - Key already exists',
-            '500': 'Internal Server Error'
-        },
-        examples: {
-            create_key: `${baseUrl}/api/adminkey=TNEH3&createkey`,
-            get_info: `${baseUrl}/api/info?key=YOUR_KEY&number=01717471131`,
-            get_info_nid: `${baseUrl}/api/info?key=YOUR_KEY&dob=1996-08-02&nid=6007128553`,
-            check_key: `${baseUrl}/api/chack?key=YOUR_KEY`,
-            delete_key: `${baseUrl}/api/delete?key=YOUR_KEY`,
-            all_keys: `${baseUrl}/api/allkey`
-        }
-    });
-});
-
-// =============================================
-// API ENDPOINTS
-// =============================================
-
-// Store API keys in memory (in production, use a database)
-let apiKeys = ['tneh_demo_key_123']; // Demo key
+// Store API keys in memory
+let apiKeys = ['tneh_demo_key_123'];
 
 // Middleware to validate API key
 function validateApiKey(req, res, next) {
@@ -173,10 +95,83 @@ function validateAdminKey(req, res, next) {
 }
 
 /**
- * 1. Create API Key
- * GET /api/adminkey=TNEH3&createkey
+ * API Documentation Route
+ * GET /api/docs
  */
-app.get('/api/adminkey=TNEH3&createkey', validateAdminKey, (req, res) => {
+app.get('/api/docs', (req, res) => {
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    
+    res.json({
+        success: true,
+        message: 'TNEH Database API',
+        base_url: baseUrl,
+        version: '1.0.0',
+        endpoints: {
+            create_key: {
+                method: 'GET',
+                endpoint: '/api/createkey?adminkey=TNEH3',
+                description: 'Generate a new API key',
+                auth_required: true
+            },
+            get_info_by_number: {
+                method: 'GET',
+                endpoint: '/api/info?key=API_KEY&number=PHONE_NUMBER',
+                description: 'Get user info by phone number',
+                auth_required: true,
+                params: ['key', 'number']
+            },
+            get_info_by_dob_nid: {
+                method: 'GET',
+                endpoint: '/api/info?key=API_KEY&dob=YYYY-MM-DD&nid=NID_NUMBER',
+                description: 'Get user info by DOB and NID',
+                auth_required: true,
+                params: ['key', 'dob', 'nid']
+            },
+            check_key: {
+                method: 'GET',
+                endpoint: '/api/chack?key=API_KEY',
+                description: 'Check if API key is valid',
+                auth_required: true,
+                params: ['key']
+            },
+            delete_key: {
+                method: 'GET',
+                endpoint: '/api/delete?key=API_KEY',
+                description: 'Delete an API key',
+                auth_required: true,
+                params: ['key']
+            },
+            all_keys: {
+                method: 'GET',
+                endpoint: '/api/allkey?adminkey=TNEH3',
+                description: 'Get all valid API keys',
+                auth_required: true
+            }
+        },
+        response_codes: {
+            '200': 'Success - Request processed successfully',
+            '400': 'Bad Request - Missing required parameters',
+            '401': 'Unauthorized - Invalid or missing API key',
+            '403': 'Forbidden - Admin access required',
+            '404': 'Not Found - Resource not found',
+            '500': 'Internal Server Error'
+        },
+        examples: {
+            create_key: `${baseUrl}/api/createkey?adminkey=TNEH3`,
+            get_info: `${baseUrl}/api/info?key=YOUR_KEY&number=01717471131`,
+            get_info_nid: `${baseUrl}/api/info?key=YOUR_KEY&dob=1996-08-02&nid=6007128553`,
+            check_key: `${baseUrl}/api/chack?key=YOUR_KEY`,
+            delete_key: `${baseUrl}/api/delete?key=YOUR_KEY`,
+            all_keys: `${baseUrl}/api/allkey?adminkey=TNEH3`
+        }
+    });
+});
+
+/**
+ * 1. Create API Key
+ * GET /api/createkey?adminkey=TNEH3
+ */
+app.get('/api/createkey', validateAdminKey, (req, res) => {
     const newKey = `tneh_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
     apiKeys.push(newKey);
     
@@ -301,7 +296,7 @@ app.get('/api/delete', (req, res) => {
 
 /**
  * 5. Get All API Keys
- * GET /api/allkey
+ * GET /api/allkey?adminkey=TNEH3
  */
 app.get('/api/allkey', validateAdminKey, (req, res) => {
     res.json({
